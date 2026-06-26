@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GeoScanner Pro 9000 - Underground Stone Detector</title>
+    <meta name="description" content="Professional concept prototype simulating an underground geological scanner and stone detector across selectable survey profiles." />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/animations.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  </head>
+  <body>
+
+    <!-- 1. HOME SCREEN -->
+    <section id="splashScreen" class="screen active">
+      <div class="home-container">
+        <!-- App Logo & Title -->
+        <div class="home-brand">
+          <div class="radar-logo anim-pulse-glow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M12 2a10 10 0 1 0 10 10H12V2Z"></path>
+              <path d="M12 12 2.93 2.93"></path>
+              <circle cx="12" cy="12" r="2"></circle>
+              <circle cx="12" cy="12" r="6" stroke-dasharray="2 4"></circle>
+            </svg>
+          </div>
+          <h1 class="home-title">GeoScanner Pro 9000</h1>
+          <p class="home-subtitle">Subsurface Stone Detector &bull; Stratigraphic Radar</p>
+        </div>
+
+        <!-- Profile Selector (A, B, C) -->
+        <div class="home-profile-selector">
+          <span class="home-profile-label" id="splashProfileBadge">SELECT SURVEY TARGET: Profile A</span>
+          <div class="profile-seg-control-home" role="tablist">
+            <button type="button" class="profile-btn active" data-profile="A" role="tab">
+              <span class="prof-dot"></span>
+              <strong>Profile A</strong>
+            </button>
+            <button type="button" class="profile-btn" data-profile="B" role="tab">
+              <span class="prof-dot"></span>
+              <strong>Profile B</strong>
+            </button>
+            <button type="button" class="profile-btn" data-profile="C" role="tab">
+              <span class="prof-dot"></span>
+              <strong>Profile C</strong>
+            </button>
+          </div>
+        </div>
+
+        <!-- Start Scan Button -->
+        <div class="home-action-box">
+          <button id="initBtn" class="btn btn-cyan home-start-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon>
+            </svg>
+            START SCAN
+          </button>
+        </div>
+
+        <!-- Subtle Footer inside Home Screen -->
+        <div class="home-footer">
+          <span>Offline Static Architecture &bull; HTML5 / CSS3 / ES6 Vanilla JS</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ACTIVE FIELD SCANNER SCREEN -->
+    <section id="scannerScreen" class="screen">
+      <div class="dashboard-grid">
+        
+        <!-- Left Main Panel: Radar Canvas Viewport -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+                <path d="M3 9h18M9 21V9"></path>
+              </svg>
+              <span>Active Downward Geoelectric &amp; Sonic Profile Scan</span>
+            </div>
+            <span style="font-family:var(--font-tech); font-size:0.75rem; color:var(--cyan-core);">RESOLUTION: 0.1M</span>
+          </div>
+
+          <!-- Radar Canvas Box -->
+          <div class="scanner-viewport">
+            <div class="depth-column">
+              <div class="depth-tick">0m</div>
+              <div class="depth-tick">3m</div>
+              <div class="depth-tick">6m</div>
+              <div class="depth-tick target-zone">9m</div>
+              <div class="depth-tick target-zone">12m</div>
+              <div class="depth-tick">15m</div>
+            </div>
+
+            <div class="canvas-wrapper">
+              <canvas id="subsurfaceCanvas"></canvas>
+              
+              <!-- HUD Overlays -->
+              <div class="scan-hud">
+                <div class="hud-pill">DENSITY: <strong id="liveDensity" style="color:#fff;">1.45 g/cm³</strong></div>
+                <div class="hud-pill">RESISTIVITY: <strong id="liveResistivity" style="color:#fff;">140 Ω⋅m</strong></div>
+                <div class="hud-pill">STRATUM: <strong id="liveStratumName" style="color:var(--cyan-core);">Topsoil</strong></div>
+              </div>
+
+              <!-- Scanning Beam -->
+              <div id="probeBeam" class="probe-beam" style="top: 0%;">
+                <span id="probeReadout" class="probe-readout">0.0m</span>
+              </div>
+
+              <!-- Conic Radar Sweep Animation -->
+              <div class="radar-overlay-container">
+                <div id="radarSweep" class="radar-sweep-line"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Bar Readout -->
+          <div class="scan-progress-bar">
+            <div class="progress-info">
+              <span id="progressStatusText">Initializing Scanner...</span>
+              <span id="progressPercent" style="color:var(--cyan-core); font-weight:bold;">0%</span>
+            </div>
+            <div class="progress-track">
+              <div id="progressBarFill" class="progress-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side Panel: Diagnostics & Terminal Console -->
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+          
+          <!-- Virtual Hardware Modules -->
+          <div class="panel" style="padding:1.2rem;">
+            <div class="panel-header" style="margin-bottom:0.5rem; padding-bottom:0.5rem;">
+              <div class="panel-title" style="font-size:0.95rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v8M4.93 10.93l1.41 1.41M2 18h2M20 18h2M17.66 12.34l1.41-1.41M12 22v-4"></path>
+                </svg>
+                <span>Virtual Hardware Subsystems</span>
+              </div>
+            </div>
+
+            <div class="module-grid">
+              <div id="modTransducer" class="module-box">
+                <span>Transducer Array</span>
+                <span>STANDBY</span>
+              </div>
+              <div id="modDSP" class="module-box">
+                <span>DSP Channels</span>
+                <span>STANDBY</span>
+              </div>
+              <div id="modTele" class="module-box">
+                <span>Signal Telemetry</span>
+                <span>STANDBY</span>
+              </div>
+              <div id="modGrav" class="module-box">
+                <span>Gravimetric Base</span>
+                <span>STANDBY</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Telemetry Console -->
+          <div class="panel" style="flex:1; padding:1.2rem; display:flex; flex-direction:column;">
+            <div class="panel-header" style="margin-bottom:0.75rem; padding-bottom:0.5rem;">
+              <div class="panel-title" style="font-size:0.95rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="4 17 10 11 4 5"></polyline>
+                  <line x1="12" y1="19" x2="20" y2="19"></line>
+                </svg>
+                <span>Live Field Instrument Console</span>
+              </div>
+              <span class="spin-icon" style="color:var(--cyan-core); font-family:var(--font-tech); font-size:0.75rem;">&bull; REC</span>
+            </div>
+
+            <div id="terminalConsole" class="terminal-console">
+              <!-- Dynamically populated log entries -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3. GEOLOGICAL SCAN RESULTS SCREEN -->
+    <section id="reportScreen" class="screen">
+      <!-- Back Button Top Bar -->
+      <div class="results-nav-bar">
+        <button id="backBtn" class="back-btn" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Back
+        </button>
+
+        <div class="results-status-pill">
+          <span class="status-dot anim-pulse-glow"></span>
+          <span>Scan completed successfully</span>
+        </div>
+
+        <button class="btn btn-outline sound-toggle-btn" style="padding:0.45rem 0.9rem; font-size:0.8rem;" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          Sonic Audio: ON
+        </button>
+      </div>
+
+      <div class="report-header-banner">
+        <div class="report-title-group">
+          <div class="verified-tag">
+            ✓ OFFICIAL GEOLOGICAL INSPECTION REPORT
+          </div>
+          <h2 id="repProfileTitle" style="font-size:clamp(1.8rem, 4vw, 2.6rem); color:#fff; font-weight:800; margin:0.3rem 0;">Profile A</h2>
+          <p id="repTimestamp" style="color:var(--text-secondary); margin:0;">Survey Target: Profile A &bull; Granitic Gneiss</p>
+        </div>
+
+        <div class="confidence-widget">
+          <div id="repConfidence" class="confidence-val">98.7%</div>
+          <div class="confidence-label">Confidence</div>
+        </div>
+      </div>
+
+      <!-- Key Detected Parameters Cards -->
+      <div class="report-metrics">
+        <div class="stat-card alert anim-pulse-alert">
+          <div class="stat-label">Stone depth</div>
+          <div id="repDepth" class="stat-value" style="color:var(--red-alert);">9.0 m</div>
+          <div class="stat-sub">Top of Hard Basement Rock</div>
+        </div>
+
+        <div class="stat-card alert">
+          <div class="stat-label">Stone thickness</div>
+          <div id="repThickness" class="stat-value">3.0 m</div>
+          <div class="stat-sub">Obstruction Slab Thickness</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Geological summary</div>
+          <div id="repLithology" class="stat-value" style="font-size:1.18rem; padding-top:0.35rem; word-break:break-word;">Granitic Gneiss</div>
+          <div class="stat-sub">Primary Basement Strata</div>
+        </div>
+
+        <div class="stat-card water">
+          <div class="stat-label">Interpretation</div>
+          <div id="repInterpretation" class="stat-value" style="color:var(--blue-accent); font-size:1.15rem; padding-top:0.35rem; line-height:1.3;">Confined Aquifer Cap</div>
+          <div class="stat-sub">Subsurface Hydro-Geology</div>
+        </div>
+      </div>
+
+      <!-- Stratigraphy Breakdown Table (Layer visualization) -->
+      <div class="panel" style="margin-bottom:2rem; padding:1.5rem; overflow-x:auto;">
+        <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:1rem; color:#fff; display:flex; align-items:center; gap:0.5rem;">
+          <span>📋 Layer visualization (Subsurface Stratigraphy)</span>
+        </h3>
+
+        <table class="strata-table">
+          <thead>
+            <tr>
+              <th style="width:16%;">Depth Interval</th>
+              <th style="width:26%;">Horizon / Stratum</th>
+              <th style="width:14%;">Est. Density</th>
+              <th style="width:16%;">Resistivity</th>
+              <th style="width:28%;">Geological &amp; Drilling Properties</th>
+            </tr>
+          </thead>
+          <tbody id="repTableBody">
+            <!-- Dynamically populated via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Recommendations & Specifications -->
+      <div class="report-body-grid">
+        <div class="panel">
+          <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1.2rem; color:#fff; display:flex; align-items:center; gap:0.5rem;">
+            <span>💡 Recommendations</span>
+          </h3>
+
+          <div style="background:rgba(6, 182, 212, 0.1); border:1px solid var(--cyan-core); border-radius:8px; padding:1.2rem; margin-bottom:1.5rem;">
+            <div style="font-family:var(--font-tech); font-size:0.75rem; color:var(--cyan-core); font-weight:bold; margin-bottom:0.4rem;">PRIMARY ADVISORY</div>
+            <p id="repRecommendationText" style="font-size:1rem; line-height:1.6; color:#fff; font-weight:500;">Hard rock layer detected. Continue below the rock layer to investigate deeper formations.</p>
+          </div>
+
+          <h4 id="repAdvisoryTitle" style="font-size:1rem; font-weight:700; color:var(--amber-warn); margin-bottom:0.5rem;">Basement Rock Obstruction</h4>
+          <p id="repAdvisoryText" style="font-size:0.9rem; color:var(--text-secondary); line-height:1.6;">Survey analysis indicates a dense crystalline formation that requires pneumatic hammer penetration.</p>
+        </div>
+
+        <div class="panel">
+          <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1.2rem; color:#fff; display:flex; align-items:center; gap:0.5rem;">
+            <span>🛠️ Technical Survey Specifications</span>
+          </h3>
+
+          <ul class="rec-list">
+            <li class="rec-item">
+              <div class="rec-icon">⚙️</div>
+              <div class="rec-content">
+                <h4>Drilling Equipment Specification</h4>
+                <p id="repDrillingSpecText">Heavy Pneumatic Rotary DTH Hammer required to grind through the hard rock obstruction.</p>
+              </div>
+            </li>
+
+            <li class="rec-item">
+              <div class="rec-icon">🛡️</div>
+              <div class="rec-content">
+                <h4>Casing &amp; Screening Advisory</h4>
+                <p id="repAdvisorySpecText">Install protective casing through upper weathered soil horizons. Place slotted PVC screens below the rock layer.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Action Footer Buttons -->
+      <div class="report-action-buttons" style="display:flex; justify-content:center; gap:1.5rem; flex-wrap:wrap; margin-top:1.5rem; margin-bottom: 2rem;">
+        <button id="rescanBtn" class="btn btn-cyan">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          START ANOTHER SCAN
+        </button>
+        <button id="printBtn" class="btn btn-outline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download Report (PDF)
+        </button>
+      </div>
+
+      <!-- Footer inside Results Screen -->
+      <footer style="margin-top:auto; padding:2rem 0 1rem 0; border-top:1px solid rgba(255,255,255,0.05); text-align:center; color:var(--text-secondary); font-size:0.78rem;">
+        <p>GeoScanner Pro 9000 &bull; Offline Static Inspection Report &bull; Vanilla JS</p>
+      </footer>
+    </section>
+
+    <!-- Modular Vanilla JS Engine -->
+    <script src="js/utils.js"></script>
+    <script src="js/vibration.js"></script>
+    <script src="js/geology.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/scanner.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Seke Stone Detector",
+  "description": "Static borehole stone detector and multi-profile geological stratigraphy analyzer for groundwater drilling investigation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
